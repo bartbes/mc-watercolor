@@ -1,0 +1,16 @@
+[
+{
+  "modid": "mcwatercolor",
+  "name": "Minecraft Watercolor",
+  "description": "Changes the visibility of water blocks",
+  "version": "${version}",
+  "mcversion": "${mcversion}",
+  "url": "",
+  "updateUrl": "",
+  "authorList": ["bartbes"],
+  "credits": "The Forge and FML developers",
+  "logoFile": "",
+  "screenshots": [],
+  "dependencies": []
+}
+]
