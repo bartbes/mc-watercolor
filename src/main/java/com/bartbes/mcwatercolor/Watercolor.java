@@ -1,5 +1,8 @@
 package com.bartbes.mcwatercolor;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.SidedProxy;
 import cpw.mods.fml.common.Mod.EventHandler;
@@ -13,6 +16,9 @@ import net.minecraft.item.ItemBlock;
 import net.minecraft.block.BlockStaticLiquid;
 
 import net.minecraftforge.fluids.RenderBlockFluid;
+
+// FIXME
+import java.lang.reflect.Modifier;
 
 @Mod(name = Watercolor.MODNAME,
 		modid = Watercolor.MODID,
@@ -31,11 +37,59 @@ public class Watercolor
 	private Block waterBlock;
 	private Block wrappedBlock;
 
+	private Class<?> getWrapperClass()
+	{
+		Class<?> newWrapper;
+		try
+		{
+			newWrapper = ClassMangler.mangle(WaterWrapper.class, waterBlock.getClass());
+		}
+		catch (ClassMangler.InvalidMangleTarget ex)
+		{
+			throw new RuntimeException(ex.getMessage(), ex);
+		}
+
+		return newWrapper;
+	}
+
+	private Block createWrapper(BlockStaticLiquid waterBlock)
+	{
+		Class<?> c = getWrapperClass();
+
+		try
+		{
+			Constructor<?> cons = c.getConstructor(BlockStaticLiquid.class);
+			return (Block) cons.newInstance(waterBlock);
+		}
+		catch (InstantiationException e)
+		{
+			System.err.println("Cannot create instance of wrapper");
+		}
+		catch (IllegalAccessException e)
+		{
+			// Never going to happen
+			System.err.println("Illegal access to constructor");
+		}
+		catch (InvocationTargetException e)
+		{
+			// Not happening either
+			System.err.println("Invocation target exception: " + e.getMessage());
+		}
+		catch (NoSuchMethodException e)
+		{
+			// Nor this
+			System.err.println("NoSuchMethodException");
+		}
+
+		return null;
+	}
+
 	@EventHandler
 	public void preinit(FMLPreInitializationEvent event)
 	{
 		waterBlock = GameRegistry.findBlock("minecraft", "water");
-		wrappedBlock = new WaterWrapper((BlockStaticLiquid) waterBlock);
+		wrappedBlock = createWrapper((BlockStaticLiquid) waterBlock);
+
 		try
 		{
 			GameRegistry.addSubstitutionAlias("minecraft:water", GameRegistry.Type.BLOCK, wrappedBlock);

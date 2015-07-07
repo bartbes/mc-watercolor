@@ -12,7 +12,8 @@ import cpw.mods.fml.relauncher.SideOnly;
 
 import net.minecraftforge.common.util.ForgeDirection;
 
-class WaterWrapper extends BlockStaticLiquid
+@ReplacableSuperclass("cofh.asmhooks.block.BlockWater")
+public class WaterWrapper extends BlockStaticLiquid implements IRenderInformation
 {
 	private BlockStaticLiquid water;
 	private IIcon clearIcon;
