@@ -73,7 +73,7 @@ public class ClassMangler
 		if (target.isAssignableFrom(c))
 			return c;
 
-		ReplacableSuperclass replacements = (ReplacableSuperclass) c.getAnnotation(ReplacableSuperclass.class);
+		ReplaceableSuperclass replacements = (ReplaceableSuperclass) c.getAnnotation(ReplaceableSuperclass.class);
 		boolean eligible = false;
 		if (replacements != null)
 			for (String alternative : replacements.value())

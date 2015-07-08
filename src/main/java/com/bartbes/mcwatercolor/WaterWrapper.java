@@ -1,6 +1,6 @@
 package com.bartbes.mcwatercolor;
 
-import com.bartbes.mcwatercolor.mangler.ReplacableSuperclass;
+import com.bartbes.mcwatercolor.mangler.ReplaceableSuperclass;
 
 import net.minecraft.util.IIcon;
 import net.minecraft.block.Block;
@@ -14,7 +14,7 @@ import cpw.mods.fml.relauncher.SideOnly;
 
 import net.minecraftforge.common.util.ForgeDirection;
 
-@ReplacableSuperclass("cofh.asmhooks.block.BlockWater")
+@ReplaceableSuperclass("cofh.asmhooks.block.BlockWater")
 public class WaterWrapper extends BlockStaticLiquid implements IRenderInformation
 {
 	private BlockStaticLiquid water;
