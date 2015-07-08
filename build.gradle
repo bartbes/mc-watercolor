@@ -24,12 +24,11 @@ gradle.projectsEvaluated {
 apply plugin: 'forge'
 
 version = "1.2"
-group= "com.bartbes.mcwatercolor"
+group = "com.bartbes.mcwatercolor"
 archivesBaseName = "mcwatercolor"
 
 minecraft {
     version = "1.7.10-10.13.4.1448-1.7.10"
-    runDir = "eclipse"
 }
 
 dependencies {
@@ -40,6 +39,9 @@ processResources
     // this will ensure that this task is redone when the versions change.
     inputs.property "version", project.version
     inputs.property "mcversion", project.minecraft.version
+
+    // Do not include gimp files
+    exclude '**/*.xcf'
 
     // replace stuff in mcmod.info, nothing else
     from(sourceSets.main.resources.srcDirs) {
@@ -53,4 +55,14 @@ processResources
     from(sourceSets.main.resources.srcDirs) {
         exclude 'mcmod.info'
     }
+
+    // Generate a version.properties ("inspired" by cpw's iron chest build.gradle)
+    doLast {
+        def propsFile = new File(destinationDir, 'version.properties')
+        def properties = new Properties()
+        properties[project.archivesBaseName + ".version"] = project.version
+        properties.store(propsFile.newWriter(), null)
+    }
 }
+
+// vim: set et sw=4 ts=4:
