@@ -33,8 +33,6 @@ minecraft {
 }
 
 dependencies {
-	// OpenBlocks is a dependency at runtime if you want to get actual use out
-	// of the mod, it's not a build-time dependency at all, though.
 }
 
 processResources
