@@ -1,4 +1,4 @@
-package com.bartbes.mcwatercolor;
+package com.bartbes.mcwatercolor.mangler;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

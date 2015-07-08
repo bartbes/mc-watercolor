@@ -1,5 +1,7 @@
 package com.bartbes.mcwatercolor;
 
+import com.bartbes.mcwatercolor.mangler.ReplacableSuperclass;
+
 import net.minecraft.util.IIcon;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockStaticLiquid;

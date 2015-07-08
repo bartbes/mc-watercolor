@@ -1,5 +1,7 @@
 package com.bartbes.mcwatercolor;
 
+import com.bartbes.mcwatercolor.mangler.ClassMangler;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
@@ -17,9 +19,6 @@ import net.minecraft.block.BlockStaticLiquid;
 
 import net.minecraftforge.fluids.RenderBlockFluid;
 
-// FIXME
-import java.lang.reflect.Modifier;
-
 @Mod(name = Watercolor.MODNAME,
 		modid = Watercolor.MODID,
 		version = Watercolor.VERSION)
@@ -35,60 +34,32 @@ public class Watercolor
 	static int renderId;
 
 	private Block waterBlock;
+	private static Class<?> wrapperClass;
 	private Block wrappedBlock;
 
-	private Class<?> getWrapperClass()
+	private Block createWrapper()
 	{
-		Class<?> newWrapper;
 		try
 		{
-			newWrapper = ClassMangler.mangle(WaterWrapper.class, waterBlock.getClass());
+			if (wrapperClass == null)
+				wrapperClass = ClassMangler.mangle(WaterWrapper.class, waterBlock.getClass());
+			Constructor<?> cons = wrapperClass.getConstructor(BlockStaticLiquid.class);
+			return (Block) cons.newInstance((BlockStaticLiquid) waterBlock);
 		}
-		catch (ClassMangler.InvalidMangleTarget ex)
+		catch (Exception ex)
 		{
+			// Here we're going to blanket-catch a whole bunch of exceptions
+			// of which only one has an actual chance of occurring, which is the
+			// invalid mangling exception
 			throw new RuntimeException(ex.getMessage(), ex);
 		}
-
-		return newWrapper;
-	}
-
-	private Block createWrapper(BlockStaticLiquid waterBlock)
-	{
-		Class<?> c = getWrapperClass();
-
-		try
-		{
-			Constructor<?> cons = c.getConstructor(BlockStaticLiquid.class);
-			return (Block) cons.newInstance(waterBlock);
-		}
-		catch (InstantiationException e)
-		{
-			System.err.println("Cannot create instance of wrapper");
-		}
-		catch (IllegalAccessException e)
-		{
-			// Never going to happen
-			System.err.println("Illegal access to constructor");
-		}
-		catch (InvocationTargetException e)
-		{
-			// Not happening either
-			System.err.println("Invocation target exception: " + e.getMessage());
-		}
-		catch (NoSuchMethodException e)
-		{
-			// Nor this
-			System.err.println("NoSuchMethodException");
-		}
-
-		return null;
 	}
 
 	@EventHandler
 	public void preinit(FMLPreInitializationEvent event)
 	{
 		waterBlock = GameRegistry.findBlock("minecraft", "water");
-		wrappedBlock = createWrapper((BlockStaticLiquid) waterBlock);
+		wrappedBlock = createWrapper();
 
 		try
 		{
