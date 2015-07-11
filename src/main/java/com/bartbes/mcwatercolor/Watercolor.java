@@ -62,12 +62,23 @@ public class Watercolor
 	@SuppressWarnings("unchecked")
 	private <T> void registerSubstitution(FMLControlledNamespacedRegistry<?> registry, T target, int id)
 	{
-		Field blockToName;
-		Field idToBlock;
+		Field blockToName = null;
+		Field idToBlock = null;
+
+		try
+		{
+			idToBlock = RegistryNamespaced.class.getDeclaredField("underlyingIntegerMap");
+		}
+		catch (NoSuchFieldException e)
+		{
+			// Let's try the obfuscated name next
+		}
+
 		try
 		{
 			blockToName = RegistryNamespaced.class.getDeclaredField("field_148758_b");
-			idToBlock = RegistryNamespaced.class.getDeclaredField("underlyingIntegerMap");
+			if (idToBlock == null)
+				idToBlock = RegistryNamespaced.class.getDeclaredField("field_148759_a");
 		}
 		catch (NoSuchFieldException e)
 		{
