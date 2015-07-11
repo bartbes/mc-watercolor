@@ -2,22 +2,26 @@ package com.bartbes.mcwatercolor;
 
 import com.bartbes.mcwatercolor.mangler.ClassMangler;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
 import cpw.mods.fml.common.Mod;
-import cpw.mods.fml.common.SidedProxy;
 import cpw.mods.fml.common.Mod.EventHandler;
+import cpw.mods.fml.common.registry.GameData;
 import cpw.mods.fml.common.registry.GameRegistry;
+import cpw.mods.fml.common.network.FMLNetworkEvent;
 import cpw.mods.fml.client.registry.RenderingRegistry;
+import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
-import cpw.mods.fml.common.registry.ExistingSubstitutionException;
+import cpw.mods.fml.common.registry.FMLControlledNamespacedRegistry;
 
 import net.minecraft.block.Block;
 import net.minecraft.item.ItemBlock;
+import net.minecraft.util.RegistryNamespaced;
 import net.minecraft.block.BlockStaticLiquid;
 
-import net.minecraftforge.fluids.RenderBlockFluid;
+import com.google.common.collect.BiMap;
 
 @Mod(name = Watercolor.MODNAME,
 		modid = Watercolor.MODID)
@@ -34,6 +38,8 @@ public class Watercolor
 	private Block waterBlock;
 	private static Class<?> wrapperClass;
 	private Block wrappedBlock;
+
+	private boolean registered = false;
 
 	private Block createWrapper()
 	{
@@ -53,23 +59,70 @@ public class Watercolor
 		}
 	}
 
+	@SuppressWarnings("unchecked")
+	private <T> void registerSubstitution(FMLControlledNamespacedRegistry<?> registry, T target, int id)
+	{
+		Field blockToName;
+		Field idToBlock;
+		try
+		{
+			blockToName = RegistryNamespaced.class.getDeclaredField("field_148758_b");
+			idToBlock = RegistryNamespaced.class.getDeclaredField("underlyingIntegerMap");
+		}
+		catch (NoSuchFieldException e)
+		{
+			throw new RuntimeException(e);
+		}
+
+		blockToName.setAccessible(true);
+		idToBlock.setAccessible(true);
+
+		try
+		{
+			((BiMap<T, String>) blockToName.get(registry)).forcePut(target, "minecraft:water");
+			((net.minecraft.util.ObjectIntIdentityMap) idToBlock.get(registry)).func_148746_a(target, id);
+		}
+		catch (IllegalAccessException e)
+		{
+			// Not happening, we just called setAccessible
+			throw new RuntimeException(e);
+		}
+	}
+
+	private void registerSubstitution()
+	{
+		if (registered)
+			return;
+
+		int id = Block.getIdFromBlock(waterBlock);
+		registerSubstitution(GameData.getBlockRegistry(), wrappedBlock, id);
+		registerSubstitution(GameData.getItemRegistry(), new ItemBlock(wrappedBlock), id);
+		registered = true;
+	}
+
 	@EventHandler
 	public void preinit(FMLPreInitializationEvent event)
 	{
 		waterBlock = GameRegistry.findBlock("minecraft", "water");
 		wrappedBlock = createWrapper();
 
-		try
-		{
-			GameRegistry.addSubstitutionAlias("minecraft:water", GameRegistry.Type.BLOCK, wrappedBlock);
-			GameRegistry.addSubstitutionAlias("minecraft:water", GameRegistry.Type.ITEM, new ItemBlock(wrappedBlock));
-		}
-		catch (ExistingSubstitutionException e)
-		{
-			System.err.println("Water already substituted");
-		}
+		// Register a "fake" block for the IIcon
+		GameRegistry.registerBlock(createWrapper(), "water");
 
 		renderId = RenderingRegistry.getNextAvailableRenderId();
 		RenderingRegistry.registerBlockHandler(renderId, new CustomRenderer());
+		cpw.mods.fml.common.FMLCommonHandler.instance().bus().register(this);
+	}
+
+	@SubscribeEvent
+	public void clientJoined(FMLNetworkEvent.ClientConnectedToServerEvent event)
+	{
+		registerSubstitution();
+	}
+
+	@SubscribeEvent
+	public void clientJoined(FMLNetworkEvent.ClientDisconnectionFromServerEvent event)
+	{
+		registered = false;
 	}
 }

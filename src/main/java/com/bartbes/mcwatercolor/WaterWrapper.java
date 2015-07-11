@@ -17,8 +17,8 @@ import net.minecraftforge.common.util.ForgeDirection;
 @ReplaceableSuperclass("cofh.asmhooks.block.BlockWater")
 public class WaterWrapper extends BlockStaticLiquid implements IRenderInformation
 {
-	private BlockStaticLiquid water;
-	private IIcon clearIcon;
+	private static BlockStaticLiquid water;
+	private static IIcon clearIcon;
 
 	private IBlockAccess access;
 	private int x;
@@ -45,7 +45,7 @@ public class WaterWrapper extends BlockStaticLiquid implements IRenderInformatio
 	public IIcon getIcon(IBlockAccess access, int x, int y, int z, int side)
 	{
 		if (access == null)
-			return super.getIcon(side, 0);
+			return water.getIcon(side, 0);
 
 		ForgeDirection dir = ForgeDirection.getOrientation(side);
 		int nx = x+dir.offsetX;
