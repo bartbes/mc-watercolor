@@ -77,6 +77,10 @@ processResources
     }
 }
 
+task gradlew(type: Wrapper) {
+    gradleVersion = '2.5'
+}
+
 task classpath <<
 {
     sourceSets
