@@ -16,6 +16,9 @@ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.registry.FMLControlledNamespacedRegistry;
 
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.client.event.RenderBlockOverlayEvent;
+
 import net.minecraft.block.Block;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.util.RegistryNamespaced;
@@ -123,6 +126,7 @@ public class Watercolor
 		renderId = RenderingRegistry.getNextAvailableRenderId();
 		RenderingRegistry.registerBlockHandler(renderId, new CustomRenderer());
 		cpw.mods.fml.common.FMLCommonHandler.instance().bus().register(this);
+		MinecraftForge.EVENT_BUS.register(this);
 	}
 
 	@SubscribeEvent
@@ -135,5 +139,16 @@ public class Watercolor
 	public void clientJoined(FMLNetworkEvent.ClientDisconnectionFromServerEvent event)
 	{
 		registered = false;
+	}
+
+	@SubscribeEvent
+	public void renderOverlay(RenderBlockOverlayEvent event)
+	{
+		if (event.overlayType != RenderBlockOverlayEvent.OverlayType.WATER)
+			return;
+
+		Block target = event.player.worldObj.getBlock(event.blockX, event.blockY, event.blockZ);
+		if (target == wrappedBlock)
+			event.setCanceled(true);
 	}
 }
